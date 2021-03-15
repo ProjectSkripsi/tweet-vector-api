@@ -1,4 +1,0 @@
-CONSUMER_KEY=11HqP6GeMu08eTHjDRwqroOF1
-CONSUMER_SECRET=4ONLczOvWH8YSpfOvwdrZhBAThlSnMqCuVmGAvihQv08gWHoZF
-BEARER_TOKEN=AAAAAAAAAAAAAAAAAAAAAFogLgEAAAAA72IXEJlZwFa2YYiZZ5a6tdMqFus%3D9JMfCsntCD2FZayB1BieUBJL2YYH1poFhjbVjRie55dWNrO5OZ
-DATABASE=mongodb+srv://root:djaduls@tweet-vector.thllt.mongodb.net/tweetVector?retryWrites=true&w=majority
