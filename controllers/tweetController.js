@@ -76,8 +76,16 @@ module.exports = {
   },
 
   getAllTweet: async (req, res) => {
+    const { pageSize, currentPage } = req.params;
+    const skip =
+      Number(currentPage) === 1
+        ? 0
+        : (Number(currentPage) - 1) * Number(pageSize);
     try {
-      const response = await Tweet.find({ deleteAt: null });
+      const response = await Tweet.find({ deleteAt: null })
+        .sort([["createdAt", "DESC"]])
+        .limit(Number(pageSize) * 1)
+        .skip(skip);
       res.status(200).json(response);
     } catch (error) {
       res.status(500).json(error);
