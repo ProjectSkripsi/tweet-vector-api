@@ -1,6 +1,7 @@
 const Tweet = require("../models/tweet");
 const client = require("../helpers/twitterService");
 const { get } = require("lodash");
+const { getClassification } = require("../helpers/hash");
 
 module.exports = {
   getTweet: (req, res) => {
@@ -18,21 +19,25 @@ module.exports = {
         if (!error) {
           const newRT = tweets.statuses;
           const filterRT = newRT.filter((tweet) => !tweet.retweeted_status);
+
           if (filterRT.length > 0) {
             const data = filterRT[0];
             const findTweet = await Tweet.find({ id: data.id });
             const isFound =
               findTweet.length === 0 &&
               get(data, "metadata.iso_language_code", "en") === "in";
-
             if (isFound) {
+              const randomClas = Math.floor(Math.random() * 4) + 1;
+
               const response = await Tweet.create({
                 id: data.id,
                 text: data.full_text,
                 user: data.user,
                 created_at: data.created_at,
+                classificationCode: randomClas,
+                classification: getClassification(randomClas),
               });
-              console.log("Successfully save to db");
+              console.log("Successfully save to db", response);
             } else {
               console.log("notfound isFound");
             }

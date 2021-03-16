@@ -17,7 +17,9 @@ const tweetSchema = new Schema(
     },
     classification: {
       type: String,
-      default: null,
+    },
+    classificationCode: {
+      type: Number,
     },
     isPositive: { type: Boolean },
     deleteAt: { type: Date, default: null },
