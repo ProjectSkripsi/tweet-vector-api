@@ -5,6 +5,7 @@ const {
   getNewTweet,
   getAllTweet,
   deleteTweet,
+  getTweetCovid,
 } = require("../controllers/tweetController");
 const cron = require("node-cron");
 
@@ -18,5 +19,6 @@ cron.schedule("*/20 * * * * *", function () {
 router.get("/", getNewTweet);
 router.get("/:pageSize/:currentPage", getAllTweet);
 router.delete("/:_id", deleteTweet);
+router.get("/covid/:pageSize/:currentPage", getTweetCovid);
 
 module.exports = router;

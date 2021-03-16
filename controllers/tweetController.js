@@ -37,7 +37,7 @@ module.exports = {
                 classificationCode: randomClas,
                 classification: getClassification(randomClas),
               });
-              console.log("Successfully save to db", response);
+              console.log("Successfully save to db");
             } else {
               console.log("notfound isFound");
             }
@@ -124,6 +124,41 @@ module.exports = {
       });
       res.status(200).json({
         msg: "success delete",
+      });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  },
+
+  getTweetCovid: async (req, res) => {
+    const { pageSize, currentPage } = req.params;
+    const { search, orderBy } = req.query;
+    const order = orderBy === "newest" ? "DESC" : "ASC";
+    var findCondition = { deleteAt: null, isDataTraining: false };
+
+    if (search) {
+      findCondition = {
+        deleteAt: null,
+        text: { $regex: new RegExp(search, "i") },
+      };
+    }
+    const skip =
+      Number(currentPage) === 1
+        ? 0
+        : (Number(currentPage) - 1) * Number(pageSize);
+    try {
+      const response = await Tweet.find(findCondition)
+        .sort([["createdAt", order]])
+        .limit(Number(pageSize) * 1)
+        .skip(skip);
+      const count = await Tweet.countDocuments(findCondition);
+      res.status(200).json({
+        currentPage,
+        data: response,
+        pageSize,
+        status: true,
+        totalItem: count,
+        totalPage: Math.ceil(count / Number(pageSize)),
       });
     } catch (error) {
       res.status(500).json(error);
