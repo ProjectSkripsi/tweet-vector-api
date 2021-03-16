@@ -36,6 +36,7 @@ module.exports = {
                 created_at: data.created_at,
                 classificationCode: randomClas,
                 classification: getClassification(randomClas),
+                isDataTraining: false,
               });
               console.log("Successfully save to db");
             } else {
