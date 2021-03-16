@@ -23,7 +23,6 @@ const tweetSchema = new Schema(
     },
     isDataTraining: {
       type: Boolean,
-      default: true,
     },
     deleteAt: { type: Date, default: null },
   },
