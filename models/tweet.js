@@ -21,7 +21,10 @@ const tweetSchema = new Schema(
     classificationCode: {
       type: Number,
     },
-    isPositive: { type: Boolean },
+    isDataTraining: {
+      type: Boolean,
+      default: false,
+    },
     deleteAt: { type: Date, default: null },
   },
   {
