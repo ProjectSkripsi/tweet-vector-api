@@ -85,7 +85,10 @@ module.exports = {
     const { pageSize, currentPage } = req.params;
     const { search, orderBy } = req.query;
     const order = orderBy === "newest" ? "DESC" : "ASC";
-    var findCondition = { deleteAt: null };
+    var findCondition = {
+      deleteAt: null,
+      isDataTraining: { $exists: false },
+    };
 
     if (search) {
       findCondition = {
@@ -110,21 +113,6 @@ module.exports = {
         status: true,
         totalItem: count,
         totalPage: Math.ceil(count / Number(pageSize)),
-      });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json(error);
-    }
-  },
-
-  deleteTweet: async (req, res) => {
-    const { _id } = req.params;
-    try {
-      const response = await Tweet.findByIdAndDelete({
-        _id,
-      });
-      res.status(200).json({
-        msg: "success delete",
       });
     } catch (error) {
       res.status(500).json(error);
@@ -163,6 +151,87 @@ module.exports = {
       });
     } catch (error) {
       res.status(500).json(error);
+    }
+  },
+
+  deleteTweet: async (req, res) => {
+    const { _id } = req.params;
+    try {
+      const response = await Tweet.findByIdAndDelete({
+        _id,
+      });
+      res.status(200).json({
+        msg: "success delete",
+      });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  },
+
+  updateClassification: async (req, res) => {
+    const { _id } = req.params;
+    const { classificationCode } = req.body;
+    try {
+      const response = await Tweet.findByIdAndUpdate(
+        {
+          _id,
+        },
+        {
+          classificationCode,
+          classification: getClassification(Number(classificationCode)),
+        },
+        {
+          returnOriginal: false,
+        }
+      );
+      res.status(200).json(response);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  },
+
+  getStatistic: async (req, res) => {
+    const { type } = req.params;
+    if (type === "handle") {
+      try {
+        const response = await Tweet.find({
+          $or: [{ classificationCode: 1 }, { classificationCode: 2 }],
+          deleteAt: null,
+          isDataTraining: false,
+        }).select("classificationCode");
+        const positif = response.filter(
+          (item) => item.classificationCode === 1
+        );
+        const negatif = response.filter(
+          (item) => item.classificationCode === 2
+        );
+
+        res.status(200).json({
+          positif: positif.length,
+          negatif: negatif.length,
+        });
+      } catch (error) {
+        res.status(500).json(error);
+      }
+    } else {
+      try {
+        const response = await Tweet.find({
+          $or: [{ classificationCode: 3 }, { classificationCode: 4 }],
+          deleteAt: null,
+          isDataTraining: false,
+        }).select("classificationCode classification");
+        const positif = response.filter(
+          (item) => item.classificationCode === 3
+        );
+        const negatif = response.filter(
+          (item) => item.classificationCode === 4
+        );
+        res
+          .status(200)
+          .json({ positif: positif.length, negatif: negatif.length });
+      } catch (error) {
+        res.status(500).json(error);
+      }
     }
   },
 };

@@ -54,9 +54,9 @@ router.post(
 );
 
 router.post("/image", uploadImages.single("file"), function (req, res) {
-  const prodUrl = "https://tweet-vector.herokuapp.com";
+  // const prodUrl = "https://tweet-vector.herokuapp.com";
   const devUrl = "http://localhost:4000";
-  const urlFile = `${prodUrl}/images/${req.file.filename}`;
+  const urlFile = `${devUrl}/images/${req.file.filename}`;
   res.send({
     status: 200,
     message: "Your file is successfully uploaded",
