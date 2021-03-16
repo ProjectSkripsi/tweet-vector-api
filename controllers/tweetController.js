@@ -77,16 +77,49 @@ module.exports = {
 
   getAllTweet: async (req, res) => {
     const { pageSize, currentPage } = req.params;
+    const { search, orderBy } = req.query;
+    const order = orderBy === "newest" ? "DESC" : "ASC";
+    var findCondition = { deleteAt: null };
+
+    if (search) {
+      findCondition = {
+        deleteAt: null,
+        text: { $regex: new RegExp(search, "i") },
+      };
+    }
     const skip =
       Number(currentPage) === 1
         ? 0
         : (Number(currentPage) - 1) * Number(pageSize);
     try {
-      const response = await Tweet.find({ deleteAt: null })
-        .sort([["createdAt", "DESC"]])
+      const response = await Tweet.find(findCondition)
+        .sort([["createdAt", order]])
         .limit(Number(pageSize) * 1)
         .skip(skip);
-      res.status(200).json(response);
+      const count = await Tweet.countDocuments(findCondition);
+      res.status(200).json({
+        currentPage,
+        data: response,
+        pageSize,
+        status: true,
+        totalItem: count,
+        totalPage: Math.ceil(count / Number(pageSize)),
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json(error);
+    }
+  },
+
+  deleteTweet: async (req, res) => {
+    const { _id } = req.params;
+    try {
+      const response = await Tweet.findByIdAndDelete({
+        _id,
+      });
+      res.status(200).json({
+        msg: "success delete",
+      });
     } catch (error) {
       res.status(500).json(error);
     }

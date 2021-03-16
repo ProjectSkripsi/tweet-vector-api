@@ -4,6 +4,7 @@ const {
   getTweet, // mining twiit
   getNewTweet,
   getAllTweet,
+  deleteTweet,
 } = require("../controllers/tweetController");
 const cron = require("node-cron");
 
@@ -15,6 +16,7 @@ cron.schedule("*/20 * * * * *", function () {
 });
 
 router.get("/", getNewTweet);
-router.get("/all/:pageSize/:currentPage", getAllTweet);
+router.get("/:pageSize/:currentPage", getAllTweet);
+router.delete("/:_id", deleteTweet);
 
 module.exports = router;
