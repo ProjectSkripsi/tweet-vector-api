@@ -15,6 +15,6 @@ cron.schedule("*/10 * * * * *", function () {
 });
 
 router.get("/", getNewTweet);
-router.get("/all", getAllTweet);
+router.get("/all/:pageSize/:currentPage", getAllTweet);
 
 module.exports = router;
