@@ -9,8 +9,8 @@ const cron = require("node-cron");
 
 /* GET users listing. */
 
-cron.schedule("*/10 * * * * *", function () {
-  console.log("running a task every 10 second");
+cron.schedule("*/20 * * * * *", function () {
+  console.log("running a task every 20 second");
   getTweet();
 });
 
