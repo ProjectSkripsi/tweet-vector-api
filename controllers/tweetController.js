@@ -28,7 +28,7 @@ const algoVsm = async (newTweet) => {
     query.getPowWeightVectorized()[0],
     document.getPowWeightVectorized()
   );
-
+  // res.status(200).json({ cosine, query, idf });
   return { cosine, query, idf };
 };
 

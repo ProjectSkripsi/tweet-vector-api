@@ -9,7 +9,6 @@ const {
   updateClassification,
   getStatistic,
   getRetweet,
-  algoVsm,
 } = require('../controllers/tweetController');
 const { isLogin, isAdmin } = require('../middlewares/auth');
 const cron = require('node-cron');
@@ -28,6 +27,5 @@ router.delete('/:_id', isLogin, isAdmin, deleteTweet);
 router.get('/covid/:pageSize/:currentPage', isLogin, isAdmin, getTweetCovid);
 router.patch('/update/:_id', isLogin, isAdmin, updateClassification);
 router.get('/retweet', getRetweet);
-router.get('/algo', algoVsm);
 
 module.exports = router;
