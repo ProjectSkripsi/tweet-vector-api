@@ -1,19 +1,48 @@
-const Tweet = require("../models/tweet");
-const client = require("../helpers/twitterService");
-const { get } = require("lodash");
-const { getClassification } = require("../helpers/hash");
+const Tweet = require('../models/tweet');
+const client = require('../helpers/twitterService');
+const { get } = require('lodash');
+const { getClassification } = require('../helpers/hash');
+// const {
+//   VSM,
+//   Cosine,
+// } = require('../helpers/vector-space-model-similarity/build/index');
+const { VSM, Cosine } = require('vector-space-model-similarity');
+const ObjectId = require('mongodb').ObjectID;
+const { getK1, getK2, getK3, getK4 } = require('../helpers/filterCategory');
+
+const algoVsm = async (newTweet) => {
+  const k1 = await getK1();
+  const k2 = await getK2();
+  const k3 = await getK3();
+  const k4 = await getK4();
+
+  const documents = [k1, k2, k3, k4];
+
+  const document = new VSM(documents);
+
+  const idf = document.getIdfVectorized();
+
+  const query = new VSM([newTweet], idf);
+
+  const cosine = Cosine(
+    query.getPowWeightVectorized()[0],
+    document.getPowWeightVectorized()
+  );
+
+  return { cosine, query, idf };
+};
 
 module.exports = {
   getTweet: (req, res) => {
-    let loc = "-5.9179251,118.9500887,12000km";
+    let loc = '-5.9179251,118.9500887,12000km';
     client.get(
-      "search/tweets",
+      'search/tweets',
       {
-        q: "covid-19",
+        q: 'covid-19',
         geocode: loc,
         count: 1,
-        tweet_mode: "extended",
-        result_type: "recent",
+        tweet_mode: 'extended',
+        result_type: 'recent',
       },
       async (error, tweets, response) => {
         if (!error) {
@@ -25,25 +54,30 @@ module.exports = {
             const findTweet = await Tweet.find({ id: data.id });
             const isFound =
               findTweet.length === 0 &&
-              get(data, "metadata.iso_language_code", "en") === "in";
+              get(data, 'metadata.iso_language_code', 'en') === 'in';
             if (isFound) {
-              const randomClas = Math.floor(Math.random() * 4) + 1;
+              const getVSM = await algoVsm(data.full_text);
+              const arr = getVSM.cosine;
+              let idx = arr.indexOf(Math.max(...arr));
+              let clasifiedCode = idx + 1;
 
+              // const randomClas = Math.floor(Math.random() * 4) + 1;
               const response = await Tweet.create({
                 id: data.id,
                 text: data.full_text,
                 user: data.user,
                 created_at: data.created_at,
-                classificationCode: randomClas,
-                classification: getClassification(randomClas),
+                classificationCode: clasifiedCode,
+                classification: getClassification(clasifiedCode),
                 isDataTraining: false,
+                analyse: getVSM,
               });
-              console.log("Successfully save to db");
+              console.log('Successfully save to db');
             } else {
-              console.log("notfound isFound");
+              console.log('notfound isFound');
             }
           } else {
-            console.log("notfound length");
+            console.log('notfound length');
           }
         } else {
           console.log(error);
@@ -53,18 +87,18 @@ module.exports = {
   },
 
   getNewTweet: async () => {
-    let loc = "-5.9179251,118.9500887,12000km";
+    let loc = '-5.9179251,118.9500887,12000km';
     client.get(
-      "search/tweets",
-      { q: "covid-19", geocode: loc, count: 1, result_type: "recent" },
+      'search/tweets',
+      { q: 'covid-19', geocode: loc, count: 1, result_type: 'recent' },
       async (error, tweets, response) => {
         if (!error) {
           const data = tweets.statuses[0];
           const findTweet = await Tweet.find({ id: data.id });
           const isFound =
             findTweet.length === 0 &&
-            get(data, "metadata.iso_language_code", "en") === "in";
-          console.log(isFound, get(data, "metadata.iso_language_code", "en"));
+            get(data, 'metadata.iso_language_code', 'en') === 'in';
+          console.log(isFound, get(data, 'metadata.iso_language_code', 'en'));
           if (isFound) {
             const response = await Tweet.create({
               id: data.id,
@@ -72,7 +106,7 @@ module.exports = {
               user: data.user,
               created_at: data.created_at,
             });
-            console.log("Successfully save to db");
+            console.log('Successfully save to db');
           }
         } else {
           console.log(error);
@@ -84,7 +118,7 @@ module.exports = {
   getAllTweet: async (req, res) => {
     const { pageSize, currentPage } = req.params;
     const { search, orderBy } = req.query;
-    const order = orderBy === "newest" ? "DESC" : "ASC";
+    const order = orderBy === 'newest' ? 'DESC' : 'ASC';
     var findCondition = {
       deleteAt: null,
       isDataTraining: { $exists: false },
@@ -93,7 +127,7 @@ module.exports = {
     if (search) {
       findCondition = {
         deleteAt: null,
-        text: { $regex: new RegExp(search, "i") },
+        text: { $regex: new RegExp(search, 'i') },
       };
     }
     const skip =
@@ -102,7 +136,7 @@ module.exports = {
         : (Number(currentPage) - 1) * Number(pageSize);
     try {
       const response = await Tweet.find(findCondition)
-        .sort([["createdAt", order]])
+        .sort([['createdAt', order]])
         .limit(Number(pageSize) * 1)
         .skip(skip);
       const count = await Tweet.countDocuments(findCondition);
@@ -122,13 +156,13 @@ module.exports = {
   getTweetCovid: async (req, res) => {
     const { pageSize, currentPage } = req.params;
     const { search, orderBy } = req.query;
-    const order = orderBy === "newest" ? "DESC" : "ASC";
+    const order = orderBy === 'newest' ? 'DESC' : 'ASC';
     var findCondition = { deleteAt: null, isDataTraining: false };
 
     if (search) {
       findCondition = {
         deleteAt: null,
-        text: { $regex: new RegExp(search, "i") },
+        text: { $regex: new RegExp(search, 'i') },
       };
     }
     const skip =
@@ -137,7 +171,7 @@ module.exports = {
         : (Number(currentPage) - 1) * Number(pageSize);
     try {
       const response = await Tweet.find(findCondition)
-        .sort([["createdAt", order]])
+        .sort([['createdAt', order]])
         .limit(Number(pageSize) * 1)
         .skip(skip);
       const count = await Tweet.countDocuments(findCondition);
@@ -161,7 +195,7 @@ module.exports = {
         _id,
       });
       res.status(200).json({
-        msg: "success delete",
+        msg: 'success delete',
       });
     } catch (error) {
       res.status(500).json(error);
@@ -192,13 +226,13 @@ module.exports = {
 
   getStatistic: async (req, res) => {
     const { type } = req.params;
-    if (type === "handle") {
+    if (type === 'handle') {
       try {
         const response = await Tweet.find({
           $or: [{ classificationCode: 1 }, { classificationCode: 2 }],
           deleteAt: null,
           isDataTraining: false,
-        }).select("classificationCode");
+        }).select('classificationCode');
         const positif = response.filter(
           (item) => item.classificationCode === 1
         );
@@ -219,7 +253,7 @@ module.exports = {
           $or: [{ classificationCode: 3 }, { classificationCode: 4 }],
           deleteAt: null,
           isDataTraining: false,
-        }).select("classificationCode classification");
+        }).select('classificationCode classification');
         const positif = response.filter(
           (item) => item.classificationCode === 3
         );
@@ -232,6 +266,23 @@ module.exports = {
       } catch (error) {
         res.status(500).json(error);
       }
+    }
+  },
+
+  getRetweet: async (req, res) => {
+    const search = 'RT @';
+    try {
+      const response = await Tweet.find({
+        text: { $regex: new RegExp(search, 'i') },
+      }).limit(4000);
+      let result = response.map((a) => ObjectId(a._id));
+
+      const delMany = await Tweet.deleteMany({
+        _id: result,
+      });
+      res.status(200).json(delMany);
+    } catch (error) {
+      res.status(500).json(error);
     }
   },
 };

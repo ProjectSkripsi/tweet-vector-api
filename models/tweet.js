@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const tweetSchema = new Schema(
@@ -24,6 +24,7 @@ const tweetSchema = new Schema(
     isDataTraining: {
       type: Boolean,
     },
+    analyse: Object,
     deleteAt: { type: Date, default: null },
   },
   {
@@ -31,5 +32,5 @@ const tweetSchema = new Schema(
   }
 );
 
-const Tweet = mongoose.model("Tweet", tweetSchema);
+const Tweet = mongoose.model('Tweet', tweetSchema);
 module.exports = Tweet;

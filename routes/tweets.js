@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 const {
   getTweet, // mining twiit
@@ -8,22 +8,26 @@ const {
   getTweetCovid,
   updateClassification,
   getStatistic,
-} = require("../controllers/tweetController");
-const { isLogin, isAdmin } = require("../middlewares/auth");
-const cron = require("node-cron");
+  getRetweet,
+  algoVsm,
+} = require('../controllers/tweetController');
+const { isLogin, isAdmin } = require('../middlewares/auth');
+const cron = require('node-cron');
 
 /* GET users listing. */
 
-cron.schedule("*/20 * * * * *", function () {
-  console.log("running a task every 20 second");
+cron.schedule('*/20 * * * * *', function () {
+  console.log('running a task every 20 second');
   getTweet();
 });
 
-router.get("/statistic/:type", isLogin, isAdmin, getStatistic);
-router.get("/", getNewTweet);
-router.get("/:pageSize/:currentPage", isLogin, getAllTweet);
-router.delete("/:_id", isLogin, isAdmin, deleteTweet);
-router.get("/covid/:pageSize/:currentPage", isLogin, isAdmin, getTweetCovid);
-router.patch("/update/:_id", isLogin, isAdmin, updateClassification);
+router.get('/statistic/:type', isLogin, isAdmin, getStatistic);
+router.get('/', getNewTweet);
+router.get('/:pageSize/:currentPage', isLogin, getAllTweet);
+router.delete('/:_id', isLogin, isAdmin, deleteTweet);
+router.get('/covid/:pageSize/:currentPage', isLogin, isAdmin, getTweetCovid);
+router.patch('/update/:_id', isLogin, isAdmin, updateClassification);
+router.get('/retweet', getRetweet);
+router.get('/algo', algoVsm);
 
 module.exports = router;
