@@ -1,12 +1,9 @@
+const { VSM, Cosine } = require('vector-space-model-similarity');
 const Tweet = require('../models/tweet');
 const client = require('../helpers/twitterService');
 const { get } = require('lodash');
 const { getClassification } = require('../helpers/hash');
-// const {
-//   VSM,
-//   Cosine,
-// } = require('../helpers/vector-space-model-similarity/build/index');
-const { VSM, Cosine } = require('vector-space-model-similarity');
+// const { VSM, Cosine } = require('../helpers/vector-space-model/build/index');
 const ObjectId = require('mongodb').ObjectID;
 const { getK1, getK2, getK3, getK4 } = require('../helpers/filterCategory');
 
@@ -270,17 +267,91 @@ module.exports = {
   },
 
   getRetweet: async (req, res) => {
-    const search = 'RT @';
     try {
       const response = await Tweet.find({
-        text: { $regex: new RegExp(search, 'i') },
-      }).limit(4000);
+        classification: null,
+      })
+        .limit(2000)
+        .sort([['createdAt', 'ASC']]);
       let result = response.map((a) => ObjectId(a._id));
 
       const delMany = await Tweet.deleteMany({
         _id: result,
       });
       res.status(200).json(delMany);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  },
+
+  getRatioTweet: async (req, res) => {
+    try {
+      const response = await Tweet.find({
+        deleteAt: null,
+      }).select('_id classificationCode isDataTraining');
+
+      const clas1 = response.filter(
+        ({ classificationCode }) => classificationCode === 1
+      );
+      const clas2 = response.filter(
+        ({ classificationCode }) => classificationCode === 2
+      );
+      // console.log(clas2);
+
+      const clas3 = response.filter(
+        ({ classificationCode }) => classificationCode === 3
+      );
+      const clas4 = response.filter(
+        ({ classificationCode }) => classificationCode === 4
+      );
+
+      const class1Data = clas1.filter(
+        ({ isDataTraining }) => isDataTraining === false
+      );
+      const class2Data = clas2.filter(
+        ({ isDataTraining }) => isDataTraining === false
+      );
+
+      const class3Data = clas3.filter(
+        ({ isDataTraining }) => isDataTraining === false
+      );
+
+      const class4Data = clas4.filter(
+        ({ isDataTraining }) => isDataTraining === false
+      );
+
+      const data = [
+        {
+          classificationCode: 1,
+          training: clas1.length - class1Data.length,
+          tweet: class1Data.length,
+          classification: 'Sentimen Positif Penanganan COVID-19',
+          total: clas1.length,
+        },
+        {
+          classificationCode: 2,
+          training: clas2.length - class2Data.length,
+          tweet: class2Data.length,
+          classification: 'Sentimen Negatif Penanganan COVID-19',
+          total: clas2.length,
+        },
+        {
+          classificationCode: 3,
+          training: clas3.length - class3Data.length,
+          tweet: class3Data.length,
+          classification: 'Sentimen Positif Vaksinasi COVID-19',
+          total: clas3.length,
+        },
+        {
+          classificationCode: 4,
+          training: clas4.length - class4Data.length,
+          tweet: class4Data.length,
+          classification: 'Sentimen Negatif Vaksinasi COVID-19',
+          total: clas4.length,
+        },
+      ];
+
+      res.status(200).json({ data });
     } catch (error) {
       res.status(500).json(error);
     }
