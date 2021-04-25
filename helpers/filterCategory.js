@@ -4,7 +4,7 @@ module.exports = {
   getK1: async () => {
     const data = await Tweet.find({
       classificationCode: 1,
-      isDataTraining: { $exists: false },
+      isDataTraining: false,
     }).select('text');
     return data.map((e) => e.text).join(' ');
   },
@@ -12,7 +12,7 @@ module.exports = {
   getK2: async () => {
     const data = await Tweet.find({
       classificationCode: 2,
-      isDataTraining: { $exists: false },
+      isDataTraining: false,
     }).select('text');
     return data.map((e) => e.text).join(' ');
   },
@@ -20,7 +20,7 @@ module.exports = {
   getK3: async () => {
     const data = await Tweet.find({
       classificationCode: 3,
-      isDataTraining: { $exists: false },
+      isDataTraining: false,
     }).select('text');
     return data.map((e) => e.text).join(' ');
   },
@@ -28,7 +28,7 @@ module.exports = {
   getK4: async () => {
     const data = await Tweet.find({
       classificationCode: 4,
-      isDataTraining: { $exists: false },
+      isDataTraining: false,
     }).select('text');
     return data.map((e) => e.text).join(' ');
   },

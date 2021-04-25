@@ -62,11 +62,11 @@ module.exports = {
               const response = await Tweet.create({
                 id: data.id,
                 text: data.full_text,
-                user: data.user,
+                // user: data.user,
                 created_at: data.created_at,
                 classificationCode: clasifiedCode,
                 classification: getClassification(clasifiedCode),
-                isDataTraining: false,
+                isDataTraining: true,
                 analyse: getVSM,
               });
               console.log('Successfully save to db');
@@ -118,7 +118,7 @@ module.exports = {
     const order = orderBy === 'newest' ? 'DESC' : 'ASC';
     var findCondition = {
       deleteAt: null,
-      isDataTraining: { $exists: false },
+      isDataTraining: false,
     };
 
     if (search) {
@@ -154,7 +154,7 @@ module.exports = {
     const { pageSize, currentPage } = req.params;
     const { search, orderBy } = req.query;
     const order = orderBy === 'newest' ? 'DESC' : 'ASC';
-    var findCondition = { deleteAt: null, isDataTraining: false };
+    var findCondition = { deleteAt: null, isDataTraining: true };
 
     if (search) {
       findCondition = {
@@ -228,7 +228,7 @@ module.exports = {
         const response = await Tweet.find({
           $or: [{ classificationCode: 1 }, { classificationCode: 2 }],
           deleteAt: null,
-          isDataTraining: false,
+          isDataTraining: true,
         }).select('classificationCode');
         const positif = response.filter(
           (item) => item.classificationCode === 1
@@ -249,7 +249,7 @@ module.exports = {
         const response = await Tweet.find({
           $or: [{ classificationCode: 3 }, { classificationCode: 4 }],
           deleteAt: null,
-          isDataTraining: false,
+          isDataTraining: true,
         }).select('classificationCode classification');
         const positif = response.filter(
           (item) => item.classificationCode === 3
@@ -288,6 +288,7 @@ module.exports = {
     try {
       const response = await Tweet.find({
         deleteAt: null,
+        isDataTraining: { $exists: true },
       }).select('_id classificationCode isDataTraining');
 
       const clas1 = response.filter(
@@ -323,29 +324,29 @@ module.exports = {
       const data = [
         {
           classificationCode: 1,
-          training: clas1.length - class1Data.length,
-          tweet: class1Data.length,
+          training: class1Data.length,
+          tweet: clas1.length - class1Data.length,
           classification: 'Sentimen Positif Penanganan COVID-19',
           total: clas1.length,
         },
         {
           classificationCode: 2,
-          training: clas2.length - class2Data.length,
-          tweet: class2Data.length,
+          training: class2Data.length,
+          tweet: clas2.length - class2Data.length,
           classification: 'Sentimen Negatif Penanganan COVID-19',
           total: clas2.length,
         },
         {
           classificationCode: 3,
-          training: clas3.length - class3Data.length,
-          tweet: class3Data.length,
+          training: class3Data.length,
+          tweet: clas3.length - class3Data.length,
           classification: 'Sentimen Positif Vaksinasi COVID-19',
           total: clas3.length,
         },
         {
           classificationCode: 4,
-          training: clas4.length - class4Data.length,
-          tweet: class4Data.length,
+          training: class4Data.length,
+          tweet: clas4.length - class4Data.length,
           classification: 'Sentimen Negatif Vaksinasi COVID-19',
           total: clas4.length,
         },
@@ -353,6 +354,7 @@ module.exports = {
 
       res.status(200).json({ data });
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   },
