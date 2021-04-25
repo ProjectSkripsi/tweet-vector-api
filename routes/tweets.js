@@ -16,7 +16,7 @@ const cron = require('node-cron');
 
 /* GET users listing. */
 
-cron.schedule('*/5 * * * * *', function () {
+cron.schedule('*/15 * * * * *', function () {
   console.log('running a task every 20 second');
   getTweet();
 });
