@@ -16,10 +16,10 @@ const cron = require('node-cron');
 
 /* GET users listing. */
 
-// cron.schedule('*/20 * * * * *', function () {
-//   console.log('running a task every 20 second');
-//   getTweet();
-// });
+cron.schedule('*/20 * * * * *', function () {
+  console.log('running a task every 20 second');
+  getTweet();
+});
 
 router.get('/statistic/:type', isLogin, isAdmin, getStatistic);
 router.get('/', getNewTweet);
