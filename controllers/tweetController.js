@@ -62,7 +62,7 @@ module.exports = {
               const response = await Tweet.create({
                 id: data.id,
                 text: data.full_text,
-                // user: data.user,
+                user: data.user,
                 created_at: data.created_at,
                 classificationCode: clasifiedCode,
                 classification: getClassification(clasifiedCode),
@@ -146,6 +146,7 @@ module.exports = {
         totalPage: Math.ceil(count / Number(pageSize)),
       });
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   },
@@ -181,6 +182,7 @@ module.exports = {
         totalPage: Math.ceil(count / Number(pageSize)),
       });
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   },
