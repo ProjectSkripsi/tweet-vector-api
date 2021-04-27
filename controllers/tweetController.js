@@ -31,7 +31,7 @@ const algoVsm = async (newTweet) => {
 
 module.exports = {
   getTweet: (req, res) => {
-    let loc = '-5.9179251,118.9500887,12000km';
+    let loc = '-5.9179251,118.9500887,1200000km';
     client.get(
       'search/tweets',
       {
@@ -43,6 +43,7 @@ module.exports = {
       },
       async (error, tweets, response) => {
         if (!error) {
+          // console.log(tweets);
           const newRT = tweets.statuses;
           const filterRT = newRT.filter((tweet) => !tweet.retweeted_status);
 
